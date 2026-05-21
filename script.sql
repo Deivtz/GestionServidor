@@ -3,7 +3,7 @@
 -- Curso: Programación 1
 -- Autor: David Barrios
 -- Fecha: 19 de mayo de 2026
--- Descripción: Script inicial de base de datos para el control de un servidor de videojuegos (Proyecto Final)
+-- Descripción: Script inicial de base de datos para el control de un servidor de MAINKLA (Proyecto Final)
 
 CREATE DATABASE IF NOT EXISTS control_servidor_db;
 USE control_servidor_db;

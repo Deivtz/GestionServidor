@@ -2,12 +2,15 @@
  * @file main.cpp
  * @brief Proyecto Final - Sistema de gestion para servidor de MAINKRA.
  * @author David Barrios
- * @date 20 de mayo de 2026
+ * @date 26 de mayo de 2026
  */
 
 #include <iostream>
 #include <windows.h>
 #include <time.h>
+#include "MySQLConexion.h"
+#include "MySQLModel.h"
+#include "EloquentORM.h"
 
 using namespace std;
 
@@ -22,7 +25,7 @@ enum Colors {
 
 /**
  * @brief Cambia el color del texto y del fondo en la consola de Windows.
- * * @param background Color de fondo deseado.
+ * @param background Color de fondo deseado.
  * @param text Color del texto deseado.
  */
 void aplicar_color(int background, int text) {
@@ -40,7 +43,7 @@ void limpiar_pantalla() {
 
 /**
  * @brief Pausa la ejecucion del programa por una cantidad especifica de milisegundos.
- * * @param ms Cantidad de milisegundos a esperar.
+ * @param ms Cantidad de milisegundos a esperar.
  */
 void esperar_tiempo(int ms) { 
     for(clock_t t = clock(); (clock() - t) * 1000 / CLOCKS_PER_SEC < ms;); 
@@ -67,7 +70,7 @@ void mostrar_menu() {
 
 /**
  * @brief Funcion principal que arranca el sistema y maneja el bucle del menu.
- * * @return 0 si el programa finaliza correctamente.
+ * @return 0 si el programa finaliza correctamente.
  */
 int main() {
     int opcionElegida = 0;     // variable en camelCase
@@ -83,6 +86,19 @@ int main() {
     }
     cout << "\n¡Bienvenido, Administrador!" << endl;
     esperar_tiempo(1000);
+
+    // --- PRUEBA DE CONEXIÓN A MYSQL ---
+    MySQLConexion conexion("root", "Tm05121204SND", "control_servidor_db");
+
+    if (conexion.open()) {
+        aplicar_color(BLACK, LGREEN); 
+        cout << "\n[+] Conexion a la base de datos del server exitosa!\n";
+    } else {
+        aplicar_color(BLACK, LRED);   
+        cout << "\n[-] Fallo al conectar a la base de datos. Revisa tus credenciales.\n";
+    }
+    esperar_tiempo(3000); // Pausa de 3 segundos para que logrés leer el mensaje
+    // ----------------------------------
 
     // Bucle principal (Loop del Menu)
     while (sistemaActivo) {

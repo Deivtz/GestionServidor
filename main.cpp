@@ -15,7 +15,7 @@
 using namespace std;
 
 /**
- * @brief Enumeración de colores para facilitar el diseño en la consola.
+ * @brief Enumeracion de colores para facilitar el diseno en la consola.
  */
 enum Colors {
     BLACK = 0, BLUE = 1, GREEN = 2, CYAN = 3, RED = 4, MAGENTA = 5,
@@ -29,8 +29,8 @@ enum Colors {
  * @param text Color del texto deseado.
  */
 void aplicar_color(int background, int text) {
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE); // variable en camelCase
-    int newColor = text + (background * 16);                // variable en camelCase
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    int newColor = text + (background * 16);
     SetConsoleTextAttribute(consoleHandle, newColor);
 }
 
@@ -73,21 +73,21 @@ void mostrar_menu() {
  * @return 0 si el programa finaliza correctamente.
  */
 int main() {
-    int opcionElegida = 0;     // variable en camelCase
-    bool sistemaActivo = true; // variable en camelCase
+    int opcionElegida = 0;
+    bool sistemaActivo = true;
     
-    // Simulacion de carga inicial interactiva
+    // Animacion de carga inicial para la interfaz
     limpiar_pantalla();
     aplicar_color(BLACK, YELLOW);
     cout << "Iniciando sistema";
     for(int i = 0; i < 3; i++) {
-        esperar_tiempo(500); // Espera medio segundo por cada punto
+        esperar_tiempo(500);
         cout << ".";
     }
     cout << "\n¡Bienvenido, Administrador!" << endl;
     esperar_tiempo(1000);
 
-    // --- PRUEBA DE CONEXIÓN A MYSQL ---
+    // Inicializacion y validacion de la conexion a la base de datos
     MySQLConexion conexion("root", "Tm05121204SND", "control_servidor_db");
 
     if (conexion.open()) {
@@ -97,15 +97,14 @@ int main() {
         aplicar_color(BLACK, LRED);   
         cout << "\n[-] Fallo al conectar a la base de datos. Revisa tus credenciales.\n";
     }
-    esperar_tiempo(3000); // Pausa de 3 segundos para que logrés leer el mensaje
-    // ----------------------------------
+    esperar_tiempo(3000); // Pausa para visualizar el estado de la conexion
 
-    // Bucle principal (Loop del Menu)
+    // Bucle principal del sistema
     while (sistemaActivo) {
         mostrar_menu();
         cin >> opcionElegida;
 
-        // Limpia el error de lectura por si el usuario mete una letra en lugar de numero
+        // Manejo de excepciones para entradas de tipo no entero (limpieza de buffer)
         if(cin.fail()) {
             cin.clear();
             cin.ignore(10000, '\n');
@@ -113,22 +112,135 @@ int main() {
         }
 
         switch (opcionElegida) {
-            case 1:
-                cout << "\n[Modulo de Clanes en construccion...]" << endl;
-                esperar_tiempo(1500);
+            case 1: {
+                limpiar_pantalla();
+                aplicar_color(BLACK, LCYAN);
+                cout << "--- REGISTRAR NUEVO CLAN ---" << endl;
+                aplicar_color(BLACK, WHITE);
+                
+                string nombreClan, descClan;
+                
+                cout << "Ingresa el nombre del clan: ";
+                // Extraccion de flujo con ws para permitir lectura de cadenas con espacios
+                getline(cin >> ws, nombreClan); 
+                
+                cout << "Ingresa una breve descripcion: ";
+                getline(cin, descClan);
+                
+                // Instanciar el modelo ORM para la tabla clanes e insertar los datos
+                EloquentORM clan(conexion, "clanes", {"nombre", "descripcion"});
+                clan.set("nombre", nombreClan);
+                clan.set("descripcion", descClan);
+                
+                if(clan.save()) {
+                    aplicar_color(BLACK, LGREEN);
+                    cout << "\n[+] Clan '" << nombreClan << "' creado y guardado exitosamente!" << endl;
+                } else {
+                    aplicar_color(BLACK, LRED);
+                    cout << "\n[-] Hubo un error al guardar el clan en la base de datos." << endl;
+                }
+                
+                esperar_tiempo(2500); 
                 break;
-            case 2:
-                cout << "\n[Modulo de Jugadores en construccion...]" << endl;
-                esperar_tiempo(1500);
+            }
+            case 2: { 
+                limpiar_pantalla();
+                aplicar_color(BLACK, LCYAN);
+                cout << "--- REGISTRAR NUEVO JUGADOR ---" << endl;
+                aplicar_color(BLACK, WHITE);
+                
+                string nicknameJugador, nivelJugador, idClan;
+                
+                cout << "Ingresa el nickname del jugador: ";
+                getline(cin >> ws, nicknameJugador); 
+                
+                cout << "Ingresa el nivel del jugador (ej. 1, 50, 99): ";
+                getline(cin, nivelJugador);
+                
+                cout << "Ingresa el ID del clan al que pertenece (ej. 1, 2, 3): ";
+                getline(cin, idClan);
+                
+                // Instanciar el modelo ORM para guardar un nuevo jugador ligado a un clan
+                EloquentORM jugador(conexion, "jugadores", {"nickname", "nivel", "clan_id"});
+                jugador.set("nickname", nicknameJugador);
+                jugador.set("nivel", nivelJugador);
+                jugador.set("clan_id", idClan);
+                
+                if(jugador.save()) {
+                    aplicar_color(BLACK, LGREEN);
+                    cout << "\n[+] Jugador '" << nicknameJugador << "' registrado exitosamente!" << endl;
+                } else {
+                    aplicar_color(BLACK, LRED);
+                    cout << "\n[-] Error al registrar jugador. (Verificar llave foranea de clan_id)." << endl;
+                }
+                
+                esperar_tiempo(2500);
                 break;
-            case 3:
-                cout << "\n[Modulo de Actualizacion en construccion...]" << endl;
-                esperar_tiempo(1500);
+            }
+            case 3: { 
+                limpiar_pantalla();
+                aplicar_color(BLACK, LCYAN);
+                cout << "--- ACTUALIZAR NIVEL DE JUGADOR ---" << endl;
+                aplicar_color(BLACK, WHITE);
+                
+                int idJugador;
+                string nuevoNivel;
+                
+                cout << "Ingresa el ID del jugador a actualizar (ej. 1, 2, 3): ";
+                cin >> idJugador;
+                
+                cout << "Ingresa el nuevo nivel: ";
+                getline(cin >> ws, nuevoNivel);
+                
+                // Busqueda del registro por PK y actualizacion de sus atributos
+                EloquentORM jugador(conexion, "jugadores", {"id", "nickname", "nivel", "clan_id"});
+                
+                if(jugador.find(idJugador)) {
+                    jugador.set("nivel", nuevoNivel); 
+                    if(jugador.save()) {
+                        aplicar_color(BLACK, LGREEN);
+                        cout << "\n[+] Nivel actualizado exitosamente a " << nuevoNivel << "!" << endl;
+                    } else {
+                        aplicar_color(BLACK, LRED);
+                        cout << "\n[-] Error al ejecutar la actualizacion en la base de datos." << endl;
+                    }
+                } else {
+                    aplicar_color(BLACK, LRED);
+                    cout << "\n[-] No se encontro ningun jugador con el ID " << idJugador << "." << endl;
+                }
+                
+                esperar_tiempo(3000);
                 break;
-            case 4:
-                cout << "\n[Modulo de Eliminacion en construccion...]" << endl;
-                esperar_tiempo(1500);
+            }
+            case 4: {
+                limpiar_pantalla();
+                aplicar_color(BLACK, LCYAN);
+                cout << "--- ELIMINAR JUGADOR ---" << endl;
+                aplicar_color(BLACK, WHITE);
+                
+                int idJugador;
+                cout << "Ingresa el ID del jugador a eliminar del sistema: ";
+                cin >> idJugador;
+                
+                EloquentORM jugador(conexion, "jugadores", {"id", "nickname", "nivel", "clan_id"});
+                
+                // Validacion de existencia previo a la operacion de eliminacion (DELETE)
+                if(jugador.find(idJugador)) {
+                    if(jugador.remove()) {
+                        aplicar_color(BLACK, LGREEN);
+                        cout << "\n[+] Jugador eliminado exitosamente del servidor." << endl;
+                    } else {
+                        aplicar_color(BLACK, LRED);
+                        cout << "\n[-] Error al intentar eliminar el registro." << endl;
+                    }
+                } else {
+                    aplicar_color(BLACK, LRED);
+                    cout << "\n[-] No se encontro ningun jugador con el ID " << idJugador << "." << endl;
+                }
+                
+                esperar_tiempo(3000);
                 break;
+            }
             case 5:
                 aplicar_color(BLACK, GREEN);
                 cout << "\nCerrando sesion... ¡Hasta luego!" << endl;
@@ -143,7 +255,7 @@ int main() {
         }
     }
     
-    // Regresar el color a la normalidad al salir a la terminal de Windows
+    // Restauracion de los atributos de color de la consola al finalizar la ejecucion
     aplicar_color(BLACK, WHITE);
     return 0;
 }
